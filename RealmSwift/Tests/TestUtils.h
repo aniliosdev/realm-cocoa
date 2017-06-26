@@ -30,4 +30,9 @@ FOUNDATION_EXTERN void RLMAssertThrowsWithReasonMatching(XCTestCase *self,
                                       NSString *regexString, NSString *message,
                                       NSString *fileName, NSUInteger lineNumber);
 
+FOUNDATION_EXTERN void RLMAssertThrowsWithReason(XCTestCase *self,
+                                      __attribute__((noescape)) dispatch_block_t block,
+                                      NSString *regexString, NSString *message,
+                                      NSString *fileName, NSUInteger lineNumber);
+
 FOUNDATION_EXTERN bool RLMHasCachedRealmForPath(NSString *path);
