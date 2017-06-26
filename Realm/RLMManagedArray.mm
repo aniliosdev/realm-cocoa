@@ -374,8 +374,10 @@ static void RLMInsertObject(RLMManagedArray *ar, id object, NSUInteger index) {
         return array;
     }
 
-    translateErrors([&] { _backingList.verify_attached(); });
-    return RLMCollectionValueForKey(self, key);
+    return translateErrors([&] {
+        _backingList.verify_attached();
+        return RLMCollectionValueForKey(_backingList, key, _realm, *_objectInfo);
+    });
 }
 
 - (void)setValue:(id)value forKey:(NSString *)key {

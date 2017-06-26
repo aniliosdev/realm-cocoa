@@ -256,7 +256,7 @@ static inline void RLMResultsValidateInWriteTransaction(__unsafe_unretained RLMR
 
 - (id)valueForKey:(NSString *)key {
     return translateErrors([&] {
-        return RLMCollectionValueForKey(self, key);
+        return RLMCollectionValueForKey(_results, key, _realm, *_info);
     });
 }
 
@@ -291,7 +291,7 @@ static inline void RLMResultsValidateInWriteTransaction(__unsafe_unretained RLMR
 - (NSArray *)_unionOfObjectsForKeyPath:(NSString *)keyPath {
     assertKeyPathIsNotNested(keyPath);
     return translateErrors([&] {
-        return RLMCollectionValueForKey(self, keyPath);
+        return RLMCollectionValueForKey(_results, keyPath, _realm, *_info);
     });
 }
 
@@ -305,16 +305,17 @@ static inline void RLMResultsValidateInWriteTransaction(__unsafe_unretained RLMR
     if ([keyPath isEqualToString:@"self"]) {
         @throw RLMException(@"self is not a valid key-path for a KVC array collection operator as 'unionOfArrays'.");
     }
+    return nil;
 
-    return translateErrors([&] {
-        NSArray *nestedResults = RLMCollectionValueForKey(self, keyPath);
-        NSMutableArray *flatArray = [NSMutableArray arrayWithCapacity:nestedResults.count];
-        for (id<RLMFastEnumerable> array in nestedResults) {
-            NSArray *nsArray = RLMCollectionValueForKey(array, @"self");
-            [flatArray addObjectsFromArray:nsArray];
-        }
-        return flatArray;
-    });
+//    return translateErrors([&] {
+//        NSArray *nestedResults = RLMCollectionValueForKey(self, keyPath);
+//        NSMutableArray *flatArray = [NSMutableArray arrayWithCapacity:nestedResults.count];
+//        for (id<RLMFastEnumerable> array in nestedResults) {
+//            NSArray *nsArray = RLMCollectionValueForKey(array, @"self");
+//            [flatArray addObjectsFromArray:nsArray];
+//        }
+//        return flatArray;
+//    });
 }
 
 - (NSArray *)_distinctUnionOfArraysForKeyPath:(__unused NSString *)keyPath {

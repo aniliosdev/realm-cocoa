@@ -78,6 +78,8 @@ RLMNotificationToken *RLMAddNotificationBlock(id objcCollection,
                                               void (^block)(id, RLMCollectionChange *, NSError *),
                                               bool suppressInitialChange=false);
 
-NSArray *RLMCollectionValueForKey(id<RLMFastEnumerable> collection, NSString *key);
+template<typename Collection>
+NSArray *RLMCollectionValueForKey(Collection& collection, NSString *key,
+                                  RLMRealm *realm, RLMClassInfo& info);
 void RLMCollectionSetValueForKey(id<RLMFastEnumerable> collection, NSString *key, id value);
 NSString *RLMDescriptionWithMaxDepth(NSString *name, id<RLMCollection> collection, NSUInteger depth);
