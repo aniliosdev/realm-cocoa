@@ -228,28 +228,29 @@ static inline void RLMResultsValidateInWriteTransaction(__unsafe_unretained RLMR
 }
 
 - (id)valueForKeyPath:(NSString *)keyPath {
-    if ([keyPath characterAtIndex:0] == '@') {
-        if ([keyPath isEqualToString:@"@count"]) {
-            return @(self.count);
-        }
-        NSRange operatorRange = [keyPath rangeOfString:@"." options:NSLiteralSearch];
-        NSUInteger keyPathLength = keyPath.length;
-        NSUInteger separatorIndex = operatorRange.location != NSNotFound ? operatorRange.location : keyPathLength;
-        NSString *operatorName = [keyPath substringWithRange:NSMakeRange(1, separatorIndex - 1)];
-        SEL opSelector = NSSelectorFromString([NSString stringWithFormat:@"_%@ForKeyPath:", operatorName]);
-        BOOL isValidOperator = [self respondsToSelector:opSelector];
-        if (!isValidOperator) {
-            @throw RLMException(@"Unsupported KVC collection operator found in key path '%@'", keyPath);
-        }
-        else if (separatorIndex >= keyPathLength - 1) {
-            @throw RLMException(@"Missing key path for KVC collection operator %@ in key path '%@'", operatorName, keyPath);
-        }
-        NSString *operatorKeyPath = [keyPath substringFromIndex:separatorIndex + 1];
-        if (isValidOperator) {
-            return ((id(*)(id, SEL, id))objc_msgSend)(self, opSelector, operatorKeyPath);
-        }
+    if ([keyPath characterAtIndex:0] != '@') {
+        return [super valueForKeyPath:keyPath];
     }
-    return [super valueForKeyPath:keyPath];
+
+    if ([keyPath isEqualToString:@"@count"]) {
+        return @(self.count);
+    }
+
+    NSRange operatorRange = [keyPath rangeOfString:@"." options:NSLiteralSearch];
+    NSUInteger keyPathLength = keyPath.length;
+    NSUInteger separatorIndex = operatorRange.location != NSNotFound ? operatorRange.location : keyPathLength;
+    if (separatorIndex >= keyPathLength - 1) {
+        @throw RLMException(@"Missing key path for KVC collection operator in key path '%@'", keyPath);
+    }
+
+    NSString *operatorName = [keyPath substringWithRange:NSMakeRange(1, separatorIndex - 1)];
+    SEL opSelector = NSSelectorFromString([NSString stringWithFormat:@"_%@ForKeyPath:", operatorName]);
+    if (![self respondsToSelector:opSelector]) {
+        @throw RLMException(@"Unsupported KVC collection operator found in key path '%@'", keyPath);
+    }
+
+    NSString *operatorKeyPath = [keyPath substringFromIndex:separatorIndex + 1];
+    return ((id(*)(id, SEL, id))objc_msgSend)(self, opSelector, operatorKeyPath);
 }
 
 - (id)valueForKey:(NSString *)key {
